@@ -1,0 +1,131 @@
+---
+title: "SARGE Data Visualization"
+author: "Stephanie J. Wilson"
+date: "2026-09-03"
+output: pdf_document
+---
+
+THIS WILL BE A MARKDOWN EXPLAINING HOW TO VIZ SARGE DATA IF YOU WANT TO DO IT NOT ON THE DASHBOARD 
+
+ALSO A STARTING POINT FOR SOME OF THE FUNCTIONS 
+
+# Code to plot recent data collected by SARGE 
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(tidyverse)
+library(lubridate)
+library(plotly)
+library(DT)
+
+source("../SARGEtools_functions/sarge_read.R")
+source("../SARGEtools_functions/sarge_plot.R")
+
+TIMEZONE <- "EST"
+
+```
+
+# Set your SARGE configuration in order to plot data 
+
+Need to set up a file that has links to your data files output by SARGE (these can be online in a Dropbox, Google Drive, Sharepoint, GitHub, etc). If you are not using an online repository, you can upload your files to a folder and put the path in the file_tab_descriptions.txt, but if you have an online repository you can put the link to the data. 
+
+** ask Abby if we need a note about google drive authorization here 
+
+Also set up a file that describes your variables. You can set the column names that your instrument or campbell code defines. 
+
+```{r configure data, echo=FALSE}
+
+# Define your files 
+files <- read_delim(
+  "../SARGE_configuredata/file_tab_descriptions.txt",
+  show_col_types = FALSE, delim = "\t"
+)
+
+# Define your instrumentation, variables, and plotting colors 
+variables <- read_csv(
+  "../SARGE_configuredata/colname_descriptions.csv",
+  show_col_types = FALSE
+) %>%
+  mutate(
+    default = as.logical(default)
+  ) %>%
+  mutate(colname = if_else(is.na(colname), label, colname),
+         label = if_else(is.na(label), colname, label))
+
+# Define the date window you want to plot 
+start_date = "2026-09-02"
+end_date = "2026-09-03"
+
+```
+
+
+
+
+## Read in your SARGE Data
+
+If you follow the data structures in the outline campbell code for the instrumentation: 
+
+
+```{r cars}
+
+data <- sarge_read(
+  files = files,
+  variables = variables,
+  timezone = TIMEZONE,
+  resolution = "minute"
+)
+
+```
+
+# Plot data from SARGE using the sarge_plot function 
+
+** Abby we may need to make a different function for the markdown rather than the shiny to make it a little more intuitive, because we are not 
+
+```{r plot data, echo=FALSE}
+
+
+
+# Plot the greenhouse gas data 
+ghg <- plot_sarge(
+  data = data,
+  data_type = "GHG",
+  start = start_date,
+  end = as.Date("2026-09-03"),
+  variables = variables
+)
+
+ghg
+
+
+
+
+
+
+
+
+
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
