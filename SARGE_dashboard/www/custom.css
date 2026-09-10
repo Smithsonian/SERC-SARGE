@@ -1,0 +1,141 @@
+body {
+  margin: 0;
+  padding: 0;
+}
+
+/* ============================================================
+   TITLE BANNER
+   ============================================================ */
+
+.quarto-title-banner {
+  background-image: url("images/DJI_0014.jpeg");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+
+  min-height: 150px;
+  color: white;
+
+  padding: 0;
+
+  width: 100vw;
+  margin-left: calc(50% - 50vw);
+  margin-right: calc(50% - 50vw);
+  margin-bottom: 20px;
+}
+
+.banner-content {
+  width: 1170px;
+  margin: 0 auto;
+  padding: 25px 0;
+  box-sizing: border-box;
+}
+
+.quarto-title-banner .title {
+  font-size: 2.5em;
+  font-weight: 700;
+  margin: 0;
+  text-shadow: 0 2px 3px rgba(0, 0, 0, 0.8);
+}
+
+
+/* ============================================================
+   LOADING OVERLAY
+   ============================================================ */
+
+#loading-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: #ffffffcc;
+  z-index: 9999;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  transition: opacity 0.5s ease;
+}
+
+#loading-overlay.hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.spinner {
+  border: 8px solid #c3c3c3;
+  border-top: 8px solid #054163;
+  border-radius: 50%;
+
+  width: 60px;
+  height: 60px;
+
+  animation: spin 1s linear infinite;
+
+  margin-bottom: 15px;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+#loading-overlay p {
+  font-size: 24px;
+  font-weight: bold;
+  color: #054163;
+}
+
+
+/* ============================================================
+   DATE CONTROLS
+   ============================================================ */
+
+.date-controls {
+  padding: 0 0 10px 0;
+}
+
+
+/* ============================================================
+   OVERVIEW
+   ============================================================ */
+
+.overview-container {
+  display: flex;
+  align-items: flex-start;
+  gap: 15px;
+}
+
+.overview-text {
+  flex: 1;
+}
+
+.overview-images {
+  width: 300px;
+  flex-shrink: 0;
+}
+
+.overview-images img {
+  width: 300px;
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin-bottom: 10px;
+}
+
+
+/* ============================================================
+   DATA TABLES
+   ============================================================ */
+
+.dataTables_wrapper {
+  font-size: 80%;
+}
