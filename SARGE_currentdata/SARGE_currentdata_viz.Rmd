@@ -20,7 +20,7 @@ library(plotly)
 library(DT)
 
 source("../SARGEtools_functions/sarge_read.R")
-source("../SARGEtools_functions/sarge_plot.R")
+source("../SARGEtools_functions/plot_sarge.R")
 
 TIMEZONE <- "EST"
 
@@ -30,7 +30,8 @@ TIMEZONE <- "EST"
 
 Need to set up a file that has links to your data files output by SARGE (these can be online in a Dropbox, Google Drive, Sharepoint, GitHub, etc). If you are not using an online repository, you can upload your files to a folder and put the path in the file_tab_descriptions.txt, but if you have an online repository you can put the link to the data. 
 
-** ask Abby if we need a note about google drive authorization here 
+If you are using google sheets, make the sheet so anyone with the link can view the file, then add this line to your code (install the googlesheets package first if you do not have it):
+`googlesheets4::gs4_deauth()`
 
 Also set up a file that describes your variables. You can set the column names that your instrument or campbell code defines. 
 
@@ -80,52 +81,40 @@ data <- sarge_read(
 
 # Plot data from SARGE using the sarge_plot function 
 
-** Abby we may need to make a different function for the markdown rather than the shiny to make it a little more intuitive, because we are not 
+
 
 ```{r plot data, echo=FALSE}
+data_type = "GHG"
 
+# Get data for selected data type
+ghg_data <- data[[data_type]]
+  
+# Get default variables and colors
+var_info <- variables %>%
+  filter(
+    data_type == !!data_type,
+    default == TRUE
+  )
 
+vars <- var_info$colname
+
+colors <- setNames(
+  var_info$color,
+  var_info$colname
+)
 
 # Plot the greenhouse gas data 
 ghg <- plot_sarge(
-  data = data,
-  data_type = "GHG",
+  data = ghg_data,
   start = start_date,
-  end = as.Date("2026-09-03"),
-  variables = variables
+  end = end_date,
+  vars = var_info$colname,
+  colors = colors
 )
 
 ghg
 
-
-
-
-
-
-
-
-
-
 ```
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

@@ -1,5 +1,14 @@
 #' Read in SARGE data
-# need to document this more 
+#'
+#' @param files dataframe with files to load
+#' @param variables dataframe with variable descriptions
+#' @param timezone timezone
+#' @param resolution temporal resolution (e.g., "minute" or "day")
+#'
+#' @returns
+#' @export
+#'
+#' @examples
 sarge_read <- function(files,
                        variables,
                        timezone,
