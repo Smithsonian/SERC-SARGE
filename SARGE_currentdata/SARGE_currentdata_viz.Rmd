@@ -19,8 +19,8 @@ library(lubridate)
 library(plotly)
 library(DT)
 
-source("../SARGEtools_functions/sarge_read.R")
-source("../SARGEtools_functions/plot_sarge.R")
+pak::pak("https://github.com/Smithsonian/SARGEtools")
+library(SARGEtools)
 
 TIMEZONE <- "EST"
 
@@ -84,32 +84,13 @@ data <- sarge_read(
 
 
 ```{r plot data, echo=FALSE}
-data_type = "GHG"
-
-# Get data for selected data type
-ghg_data <- data[[data_type]]
-  
-# Get default variables and colors
-var_info <- variables %>%
-  filter(
-    data_type == !!data_type,
-    default == TRUE
-  )
-
-vars <- var_info$colname
-
-colors <- setNames(
-  var_info$color,
-  var_info$colname
-)
-
 # Plot the greenhouse gas data 
-ghg <- plot_sarge(
-  data = ghg_data,
+ghg <- sarge_plot_defaults(
+  data = data,
+  data_type = "GHG",
   start = start_date,
   end = end_date,
-  vars = var_info$colname,
-  colors = colors
+  variables = variables
 )
 
 ghg
