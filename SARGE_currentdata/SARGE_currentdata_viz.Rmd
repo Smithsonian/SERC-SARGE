@@ -5,12 +5,9 @@ date: "2026-09-03"
 output: pdf_document
 ---
 
-THIS WILL BE A MARKDOWN EXPLAINING HOW TO VIZ SARGE DATA IF YOU WANT TO DO IT NOT ON THE DASHBOARD 
+# Code to visualize current data collected by SARGE 
 
-ALSO A STARTING POINT FOR SOME OF THE FUNCTIONS 
-
-# Code to plot recent data collected by SARGE 
-
+## Set up code 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 
@@ -18,34 +15,25 @@ library(tidyverse)
 library(lubridate)
 library(plotly)
 library(DT)
-
-source("../SARGEtools_functions/sarge_read.R")
-source("../SARGEtools_functions/plot_sarge.R")
+library(SARGEtools)
 
 TIMEZONE <- "EST"
 
 ```
 
-# Set your SARGE configuration in order to plot data 
-
-Need to set up a file that has links to your data files output by SARGE (these can be online in a Dropbox, Google Drive, Sharepoint, GitHub, etc). If you are not using an online repository, you can upload your files to a folder and put the path in the file_tab_descriptions.txt, but if you have an online repository you can put the link to the data. 
-
-If you are using google sheets, make the sheet so anyone with the link can view the file, then add this line to your code (install the googlesheets package first if you do not have it):
-`googlesheets4::gs4_deauth()`
-
-Also set up a file that describes your variables. You can set the column names that your instrument or campbell code defines. 
+## Define files and variables  
 
 ```{r configure data, echo=FALSE}
 
 # Define your files 
 files <- read_delim(
-  "../SARGE_configuredata/file_tab_descriptions.txt",
+  "../SARGE_configuredata/file_descriptions.txt",
   show_col_types = FALSE, delim = "\t"
 )
 
 # Define your instrumentation, variables, and plotting colors 
 variables <- read_csv(
-  "../SARGE_configuredata/colname_descriptions.csv",
+  "../SARGE_configuredata/variable_descriptions.csv",
   show_col_types = FALSE
 ) %>%
   mutate(
@@ -55,18 +43,15 @@ variables <- read_csv(
          label = if_else(is.na(label), colname, label))
 
 # Define the date window you want to plot 
-start_date = "2026-09-02"
-end_date = "2026-09-03"
+start_date = "2026-01-17"
+end_date = "2026-01-19"
 
 ```
 
 
 
 
-## Read in your SARGE Data
-
-If you follow the data structures in the outline campbell code for the instrumentation: 
-
+## Read in your SARGE Data with sarge_read()
 
 ```{r cars}
 
@@ -77,44 +62,96 @@ data <- sarge_read(
   resolution = "minute"
 )
 
+head(data)
+
 ```
 
-# Plot data from SARGE using the sarge_plot function 
+# Plot data from SARGE using the sarge_plot_defaults() function 
+
+## Physiochemical Data: Measurements made by the Xylem EXO2 Sonde in the example data 
+
+```{r plot physiochemical data, warning=FALSE}
+
+# Set the desired data_type from your data (must match a data_type in variables)
+data_type = "Physiochemistry"
+
+# Plot the greenhouse gas data from SARGE 
+exo_plot <- sarge_plot_defaults(
+                    data = data,               
+                    data_type = data_type,    
+                    start = start_date,       
+                    end = end_date,           
+                    variables = variables)    
+
+# Print the Plot 
+exo_plot 
 
 
+```    
 
-```{r plot data, echo=FALSE}
+## Hydrologic Data: Measurements made by the Sontek IQ ADCP in the example data 
+
+```{r plot ADCP data, warning=FALSE}
+
+# Set the desired data_type from your data (must match a data_type in variables)
+data_type = "Hydrology"
+
+# Plot the greenhouse gas data from SARGE 
+adcp_plot <- sarge_plot_defaults(
+                    data = data,              
+                    data_type = data_type,    
+                    start = start_date,       
+                    end = end_date,           
+                    variables = variables)    
+
+# Print the Plot 
+adcp_plot 
+
+
+```    
+
+## Greenhouse Gas Data: Measurements made by a LICOR 7810 in the example data 
+
+```{r plot GHG data, warning=FALSE}
+
+# Set the desired data_type from your data (must match a data_type in variables)
 data_type = "GHG"
 
-# Get data for selected data type
-ghg_data <- data[[data_type]]
-  
-# Get default variables and colors
-var_info <- variables %>%
-  filter(
-    data_type == !!data_type,
-    default == TRUE
-  )
+# Plot the greenhouse gas data from SARGE 
+ghg_plot <- sarge_plot_defaults(
+                    data = data,              
+                    data_type = data_type,    
+                    start = start_date,       
+                    end = end_date,           
+                    variables = variables)    
 
-vars <- var_info$colname
-
-colors <- setNames(
-  var_info$color,
-  var_info$colname
-)
-
-# Plot the greenhouse gas data 
-ghg <- plot_sarge(
-  data = ghg_data,
-  start = start_date,
-  end = end_date,
-  vars = var_info$colname,
-  colors = colors
-)
-
-ghg
-
-```
+# Print the Plot 
+ghg_plot 
 
 
+```    
+
+## Radon Gas Data: Measurements made by a Durridge RAD7 in the example data 
+
+```{r plot Radon data, warning=FALSE}
+
+
+# Set the desired data_type from your data (must match a data_type in variables)
+data_type = "Radon"
+
+# Plot the greenhouse gas data from SARGE 
+rad7_plot <- sarge_plot_defaults(
+                    data = data,              
+                    data_type = data_type,    
+                    start = start_date,       
+                    end = end_date,           
+                    variables = variables)    
+
+# Print the Plot 
+rad7_plot 
+
+
+
+
+```   
 
