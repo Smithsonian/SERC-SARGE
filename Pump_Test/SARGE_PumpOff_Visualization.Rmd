@@ -1,0 +1,213 @@
+---
+title: "SARGE Real Time Data Visualization Code"
+author: "Stephanie J. Wilson"
+date: Sys.Date()
+output: pdf_document
+---
+
+
+```{r setup, include=FALSE}
+
+# Load necessary packages 
+library(data.table); library(tidyverse)
+library(readxl); library(lubridate)
+library(ggpubr); library(cowplot)
+library(plotrix)
+
+# 
+
+```
+
+## Would be nice to have a table that is output that has the logger power in and out
+#then to plot those data to look for battery level loss. 
+
+## EXO2 Sonde (Xylem Analytics) Current Data 
+```{r, echo=FALSE}
+
+#Read in current water quality sonde (EXO2) data from SARGE
+exo <- read.table("Data/WILSON_ExoTable.dat", header=TRUE, skip=3, sep= ",")
+
+#Take a quick look at the data 
+head(exo)
+
+#could consider putting these into a csv that then I read in for the EXO to be cleaner... 
+colnames(exo) <- c("TIMESTAMP","RECORD","Date","Time","Chlorophyll_RFU","Chlorophyll_ugL",
+              "Conductivity","FDOM_QSU","FDOM_RFU","NLF_conductivity",
+              "ODO_sat","ODO_local", "ODO_MgL", "Pressure_psia", "Salinity_PPT", 
+              "Specific_Conductivity_uScm", "BGA_PE_RFU", "BGA_PE_ugL",
+              "TDS_mg_L","Turbidity_FNU","Wiper_Position_mv","pH","pH_mv","Temp_C", 
+              "Depth_m","Battery_v","Cable_v","Wiper_Current_ma","sn","snn")
+
+
+#Make a new timestamp column that is recognized as date + time measured in the timezone needed:
+exo$TIMESTAMP <- ymd_hms(exo$TIMESTAMP, tz = "EST")
+
+exo <- exo %>%
+  filter(TIMESTAMP > "2026-09-01")
+
+#Ensure that columns that should be numbers are numeric for plotting:
+exo$Depth_m <- as.numeric(exo$Depth_m)
+exo$Conductivity <- as.numeric(exo$Conductivity)
+
+
+## Plot Waterlevel (Depth_m)
+waterlev <- ggplot(exo, aes(x=TIMESTAMP, y=Depth_m)) + geom_point(color="blue") + ylim(-0.5,2.5) #+ xlim(c(as.POSIXct('2024-09-19 00:00:00', format = "%Y-%m-%d %H:%M:%S"),
+     #as.POSIXct('2024-09-28 00:00:00', format = "%Y-%m-%d %H:%M:%S"))) + theme_classic()
+waterlev
+
+## Plot conductivity 
+cond <- ggplot(exo, aes(x=TIMESTAMP, y=Salinity_PPT)) + geom_point(color="purple") #+ 
+  #xlim(c(as.POSIXct('2024-09-19 00:00:00', format = "%Y-%m-%d %H:%M:%S"),
+     #as.POSIXct('2024-09-28 00:00:00', format = "%Y-%m-%d %H:%M:%S"))) + theme_classic()
+cond
+
+## Can plot as many or as few variables as needed, consider plotting what is useful for checks
+
+```
+
+## SontekIQ series (Xylem Analytics) Current Data 
+```{r, echo=FALSE}
+
+#read in hydrologic data from Sontek IQ (Xylem Analytics)
+sontek <- read.table("Data/WILSON_SontekTable.dat", header=TRUE, skip=1, sep= ",")
+sontek <- sontek[-(1:3), ]
+sontek <- as.tibble(sontek)
+
+#Take a quick look at the tibble created
+head(sontek)
+
+#Make a new timestamp column that is recognized as date + time measured in the timezone needed:
+sontek$TIMESTAMP <- ymd_hms(sontek$TIMESTAMP, tz = "EST")
+
+sontek <- sontek %>%
+  filter(TIMESTAMP > "2026-09-01")
+
+#Ensure that columns that should be numbers are numeric for plotting:
+sontek$Flowrate <- as.numeric(sontek$Flowrate)
+sontek$Water_depth <- as.numeric(sontek$Water_depth)
+sontek$Index_velocity <- as.numeric(sontek$Index_velocity)
+
+## Plot Sontek Flow Data: 
+flow <- ggplot(sontek, aes(x=TIMESTAMP, y=Flowrate)) + geom_point(color="black") +       
+  #xlim(c(as.POSIXct('2024-09-19 00:00:00', format = "%Y-%m-%d %H:%M:%S"),
+    # as.POSIXct('2024-09-28 00:00:00', format = "%Y-%m-%d %H:%M:%S"))) + 
+      theme_classic()
+flow
+
+## Plot Index Velocity or Water flow Velocity 
+flow1 <- ggplot(sontek, aes(x=TIMESTAMP, y=Index_velocity)) + geom_point(color="black") + theme_classic()       
+  #xlim(c(as.POSIXct('2024-09-19 00:00:00', format = "%Y-%m-%d %H:%M:%S"),
+     #as.POSIXct('2024-09-28 00:00:00', format = "%Y-%m-%d %H:%M:%S"))) 
+flow1
+
+## Plot water depth measured by the sontekIQ 
+sdepth <- ggplot(sontek, aes(x=TIMESTAMP, y=Water_depth)) + geom_point(color="darkblue") + theme_classic()
+    #xlim(c(as.POSIXct('2024-09-19 00:00:00', format = "%Y-%m-%d %H:%M:%S"),
+     #as.POSIXct('2024-09-28 00:00:00', format = "%Y-%m-%d %H:%M:%S"))) 
+sdepth
+
+
+```
+
+## LI7810 CH4/CO2/H2O Trace Gas Analyzer (LI-COR) Data from lab test when I simulated increasing CO2 concentrations then shut off the pump 
+```{r, echo=FALSE}
+#Note that similar code could be used with a LI7820 N2O Analyzer 
+
+#read in gas concentration data from the LI7810 (LI-COR)
+flux <- read.table("Data/WILSON_FLUX_7810.dat", header=TRUE, skip=1, sep= ",")
+flux <- flux[-(1:2), ]
+
+#Take a quick look at the dataframe created
+head(flux)
+
+#Make a new timestamp column that is recognized as date + time measured in the timezone needed:
+flux$TIMESTAMP1 <- ymd_hms(flux$TIMESTAMP, tz = "EST")
+
+flux <- flux %>%
+  filter(TIMESTAMP > "2026-09-01")
+
+#Ensure that columns that should be numbers are numeric for plotting:
+flux$CH4d_ppm <- as.numeric(flux$CH4)
+flux$CO2d_ppm <- as.numeric(flux$CO2)
+
+
+## Plot CH4 Data (Note: these are raw concentrations, not in water concentrations)
+ghg_CH4 <- ggplot(flux, aes(x=TIMESTAMP1, y=CH4d_ppm)) + geom_point(color="darkviolet")+
+  xlim(c(as.POSIXct('2026-09-04 10:46:15', format = "%Y-%m-%d %H:%M:%S"),
+    as.POSIXct('2026-09-04 12:00:00', format = "%Y-%m-%d %H:%M:%S"))) +
+  
+  scale_y_continuous( limits = c(2000, 2200), breaks = seq(2000, 2200, 50)) + 
+  
+  labs(x = " ", y = expression("CH"[4]~ "(ppb)")) +
+  
+  theme_bw() +
+  
+  geom_hline(
+    yintercept = 2050, linetype = "dashed",color = "black", linewidth = 0.8) +
+
+  theme(
+    axis.text.x = element_text(angle = 0, size = 14 ),
+    axis.title.y = element_text(size = 14),
+    axis.text.y = element_text(size = 14),
+    #strip.text = element_text( size = 14),
+    legend.position = "none")
+    
+ghg_CH4
+
+## Plot CO2 Data (Note: these are raw concentrations, not in water concentrations)
+ghg_CO2 <- ggplot(flux, aes(x=TIMESTAMP1, y=CO2d_ppm)) + geom_point(color="navy") + 
+  xlim(c(as.POSIXct('2026-09-04 10:46:15', format = "%Y-%m-%d %H:%M:%S"),
+    as.POSIXct('2026-09-04 12:00:00', format = "%Y-%m-%d %H:%M:%S"))) +
+  
+  scale_y_continuous( limits = c(0, 3100), breaks = seq(0, 3000, 500)) + 
+  
+  labs(x = " ", y = expression("CO"[2]~ "(ppm)")) +
+  
+  theme_bw() +
+  
+  geom_hline(
+    yintercept = 475, linetype = "dashed",color = "black", linewidth = 0.8) +
+
+  theme(
+    axis.text.x = element_text(angle = 0, size = 14 ),
+    axis.title.y = element_text(size = 14),
+    axis.text.y = element_text(size = 14),
+    #strip.text = element_text( size = 14),
+    legend.position = "none")
+ghg_CO2
+
+
+pump_off_fig1 <- plot_grid(ghg_CH4, ghg_CO2, ncol = 2) #, align = "v", vjust = 1)
+pump_off_fig1
+
+
+```
+
+
+# Let's also look at the LICOR data from SWH and see if we can see when the pump shut off when the power went off 
+```{r}
+
+library(fluxfinder)
+
+data <- ffi_read_LI7810("Data/TG10-01087-2024-08-09T120000.dat")
+
+
+
+ggplot(data, aes(x=TIMESTAMP, y=CO2)) + geom_point() + 
+    xlim(c(as.POSIXct('2024-08-19 00:00:00', format = "%Y-%m-%d %H:%M:%S"),
+    as.POSIXct('2024-08-19 12:00:00', format = "%Y-%m-%d %H:%M:%S"))) + 
+    scale_y_continuous( limits = c(0, 7500)) #, breaks = seq(0, 3000, 500)) 
+
+ggplot(data, aes(x=TIMESTAMP, y=CH4)) + geom_point() + 
+    xlim(c(as.POSIXct('2024-08-19 00:00:00', format = "%Y-%m-%d %H:%M:%S"),
+    as.POSIXct('2024-08-19 12:00:00', format = "%Y-%m-%d %H:%M:%S"))) + 
+    scale_y_continuous( limits = c(0, 300000)) #, breaks = seq(0, 3000, 500)) 
+  
+
+```
+
+
+
+
+
+
